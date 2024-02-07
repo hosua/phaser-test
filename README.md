@@ -1,4 +1,18 @@
-# Phaser Webpack Template
+# Getting started
+
+Setup:
+```
+npm install
+```
+
+Running:
+```
+npm run dev
+```
+
+The web app should be accessible on `http://localhost:8080/` unless port 8080 was already being used.
+
+# Below is the Phaser Webpack Template's Original README
 
 This is a Phaser 3 project template that uses webpack for bundling. It supports hot-reloading for quick development workflow and includes scripts to generate production-ready builds.
 
