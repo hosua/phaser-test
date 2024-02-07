@@ -1,129 +1,13 @@
 import { Scene } from 'phaser';
-
-/* necro sprite info:
- * 160x128 sprite size
- * 17 max sprites in a row
- */
-
-class Bullet extends Phaser.GameObjects.Sprite {
-	constructor(scene, x, y){
-		// console.log(`Created bullet at (${x},${y})`);
-		super(scene, x, y, 'bullet');
-		this.SPEED = 4;
-		this.setPosition(x, y);
-		this.angle = -90; // sprite sheet is facing right, we want it facing up
-		this.play('bullet');
-	}
-
-	preUpdate(time, delta){
-		super.preUpdate(time, delta);
-	}
-
-	update(time, delta, game){
-		this.y -= this.SPEED;
-		// console.log(`Bullet is alive at (${this.x},${this.y})\n`);
-	}
-
-	isOffScreen(game){ // returns true if bullet is no longer in the game field
-		return (this.y < -32 || 
-			this.y > game.config.height + 32 ||
-			this.x < -16 || 
-			this.x > game.config.width + 16
-		);
-	}
-
-	impact(){
-		// handle collision events and animation here
-	}
-}
-
-Phaser.GameObjects.GameObjectFactory.register('bullet', function(x, y) {
-	const bullet = new Bullet(this.scene, x, y);
-	this.displayList.add(bullet);
-	this.updateList.add(bullet);
-	return bullet;
-});
-
-class Player extends Phaser.GameObjects.Sprite {
-	constructor(scene, x, y){
-		super(scene, x, y, 'player'); 
-		this.setPosition(x, y);
-		this.SPEED = 3;
-		this.BULLET_OFFSET = {
-			right: { x:  15, y: -15 }, // bullet spawn offset when player faces right
-			left:  { x: -15, y: -15 }, // bullet spawn offset when player faces left
-		}
-
-		// cooldown variables to prevent player from shooting too quickly 
-		this.SHOOT_DELAY = 15; // interval of shooting
-		// shoot_cd is updated every time phaser calls update, which should be ~60FPS
-		this.shoot_cd = 0; 
-
-		this.facing_right = true; // tracks the direction the player is currently facing
-		this.play('player_idle');
-	}
-	
-	preUpdate(time, delta){
-		super.preUpdate(time, delta);
-	}
-a
-	update(time, delta, keys, game, bullets){
-		if (keys.A.isDown && this.x > 20)
-			this.move(false);
-		else if (keys.D.isDown && this.x < game.config.width - 20)
-			this.move(true);
-		else if (this.anims.isPlaying && 
-				this.anims.currentAnim.key !== 'player_idle' &&
-				this.anims.currentAnim.key !== 'player_shoot')
-			this.play('player_idle');
-		
-		this.shoot_cd--;
-		if (this.shoot_cd < 0 && keys.W.isDown){ 
-			this.shoot(bullets);
-			this.shoot_cd = this.SHOOT_DELAY;
-		}
-	}
-
-	move(is_moving_right){
-		console.log(this.anims);
-		if (this.anims.isPlaying && this.anims.currentAnim.key === 'player_idle')
-			this.play('player_walk');
-
-		if (is_moving_right){
-			this.x += this.SPEED;
-			if (!this.facing_right){
-				this.flipX = false;
-				this.facing_right = true;
-			}
-		} else {
-			this.x -= this.SPEED;
-			if (this.facing_right){ 
-				this.facing_right = false;
-				this.flipX = true;
-			}
-		}
-	}
-
-	shoot(bullets){
-		// run shooting animations
-		this.play('player_shoot');
-		// the key of the next animation to play once this one is complete
-		// see: https://newdocs.phaser.io/docs/3.55.1/focus/Phaser.Animations.AnimationState-nextAnim
-		this.anims.nextAnim = 'player_idle';
-
-		// spawn bullet object at the player's staff 
-		if (this.facing_right)
-			bullets.push(this.scene.add.bullet(this.x + this.BULLET_OFFSET.right.x, this.y + this.BULLET_OFFSET.right.y));
-		else
-			bullets.push(this.scene.add.bullet(this.x + this.BULLET_OFFSET.left.x, this.y + this.BULLET_OFFSET.left.y));
-	}
-}
+import { Player } from '../game/Player.js';
+import { Enemy } from '../game/Enemy.js';
 
 export class Game extends Scene
 {
 	constructor (){
 		super('Game');
 		this.bullets = [];
+		this.enemies = [];
 	}
 
 	create (){
@@ -135,6 +19,7 @@ export class Game extends Scene
 			A: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
 			S: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
 			D: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+			Space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
 		}
 
 		this.cameras.main.setBackgroundColor(0x00ff00);
@@ -142,7 +27,8 @@ export class Game extends Scene
 		this.add.image(512, 384, 'background').setAlpha(0.5);
 
 		// this.player = this.add.sprite(this.PLAYER_START_POS.x, this.PLAYER_START_POS.y);
-		this.player = new Player(this, this.PLAYER_START_POS.x, this.PLAYER_START_POS.y);
+		// this.player = new Player(this, this.PLAYER_START_POS.x, this.PLAYER_START_POS.y);
+		this.player = this.add.player(this.PLAYER_START_POS.x, this.PLAYER_START_POS.y);
 		
 		// when adding a custom-defined class, use add.existing. 
 		// see: https://blog.ourcade.co/posts/2020/organize-phaser-3-code-game-object-factory-methods/
@@ -154,11 +40,28 @@ export class Game extends Scene
 			this.scene.start('GameOver');
 		});
 		*/
+		
+		/* Spawning enemies */
+		const X_START = 80;
+		let x = X_START;
+		const X_GAP = 16;
+		const X_INTERVAL = 48;
+		const Y_GAP = 16;
+		const Y_INTERVAL = 48;
+
+		let y = 50;
+		for (let i = 0; i < 5; i++){
+			for (let j = 0; j < 12; j++){
+				x += X_INTERVAL + X_GAP;
+				this.enemies.push(this.add.enemy(x, y).setScale(3.5));
+			}
+			x = X_START;
+			y += Y_INTERVAL + Y_GAP;
+		}
 	}
 
 	update(time, delta){
-		const keys = this.KEYS;
-		this.player.update(time, delta, keys, this.game, this.bullets); // Now we can handle our custom class updates like this
+		this.player.update(time, delta, this.KEYS, this.game, this.bullets); // Now we can handle our custom class updates like this
 		// iterate in reverse to account for indices when deleting bullets
 		for (let i = this.bullets.length-1; i >= 0; --i){
 			this.bullets[i].update(time, delta, this.game);

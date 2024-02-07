@@ -14,6 +14,7 @@ export class Boot extends Scene
         this.load.image('background', 'assets/bg.png');
 		this.load.spritesheet('necromancer', 'assets/necromancer.png', { frameWidth: 160, frameHeight: 128 });
 		this.load.spritesheet('bullet', 'assets/bullet-shoot.png', { frameWidth: 32, frameHeight: 16 });
+		this.load.spritesheet('enemy', 'assets/alan.png', { frameWidth: 16, frameHeight: 16 });
     }
 
     create ()
@@ -46,7 +47,14 @@ export class Boot extends Scene
 			key: 'bullet',
 			frames: this.anims.generateFrameNumbers('bullet', { frames: [1,2,3,4] }),
 			frameRate: 8,
-			repeat: -1
+			repeat: -1,
+		});
+
+		this.anims.create({
+			key: 'enemy_idle',
+			frames: this.anims.generateFrameNumbers('enemy', { frames: [3,4] }),
+			frameRate: 8,
+			repeat: -1,
 		});
     }
 }
