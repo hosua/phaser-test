@@ -86,7 +86,6 @@ a
 		}
 	}
 
-	// TODO: Need cooldown for shooting 
 	shoot(bullets){
 		// run shooting animations
 		this.play('player_shoot');
@@ -95,7 +94,7 @@ a
 			this.play('player_idle');
 		});
 
-		// spawn bullet object at origin
+		// spawn bullet object at the player's staff 
 		if (this.facingRight)
 			bullets.push(this.scene.add.bullet(this.x + this.BULLET_OFFSET.right.x, this.y + this.BULLET_OFFSET.right.y));
 		else

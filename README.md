@@ -10,6 +10,12 @@ Running:
 npm run dev
 ```
 
+Controls:
+```
+A/D: Move left/right
+W:   Shoot
+```
+
 The web app should be accessible on `http://localhost:8080/` unless port 8080 was already being used.
 
 # Below is the Phaser Webpack Template's Original README
