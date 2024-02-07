@@ -10,13 +10,17 @@ Running:
 npm run dev
 ```
 
+The web app should be accessible on `http://localhost:8080/` unless port 8080 was already being used.
+
 Controls:
 ```
 A/D: Move left/right
-W:   Shoot
+W/Space:   Shoot
 ```
+Demo:
 
-The web app should be accessible on `http://localhost:8080/` unless port 8080 was already being used.
+https://github.com/hosua/phaser-test/assets/22788738/d015bb67-10b7-4996-b0a1-6d041e622b46
+
 
 # Below is the Phaser Webpack Template's Original README
 
