@@ -25,8 +25,11 @@ class Bullet extends Phaser.GameObjects.Sprite {
 	}
 
 	isOffScreen(game){ // returns true if bullet is no longer in the game field
-		return (this.y < -32 || this.y > game.config.height + 32 ||
-			this.x < -16 || this.x > game.config.width + 16);
+		return (this.y < -32 || 
+			this.y > game.config.height + 32 ||
+			this.x < -16 || 
+			this.x > game.config.width + 16
+		);
 	}
 
 	impact(){
@@ -47,10 +50,8 @@ class Player extends Phaser.GameObjects.Sprite {
 		this.setPosition(x, y);
 		this.SPEED = 3;
 		this.BULLET_OFFSET = {
-			// bullet spawn offset when player faces right
-			right: { x:  15, y: -15 },
-			// bullet spawn offset when player faces left
-			left:  { x: -15, y: -15 },
+			right: { x:  15, y: -15 }, // bullet spawn offset when player faces right
+			left:  { x: -15, y: -15 }, // bullet spawn offset when player faces left
 		}
 
 		// cooldown variables to prevent player from shooting too quickly 
@@ -71,7 +72,9 @@ a
 			this.move(false);
 		else if (keys.D.isDown && this.x < game.config.width - 20)
 			this.move(true);
-		else if (this.anims.isPlaying && this.anims.currentAnim.key !== 'player_idle')
+		else if (this.anims.isPlaying && 
+				this.anims.currentAnim.key !== 'player_idle' &&
+				this.anims.currentAnim.key !== 'player_shoot')
 			this.play('player_idle');
 		
 		this.shoot_cd--;
