@@ -30,6 +30,13 @@ export class Boot extends Scene
 		});
 
 		this.anims.create({
+			key: 'player_walk',
+			frames: this.anims.generateFrameNumbers('necromancer', { frames: [17,18,19,20,21,22,23,24] }),
+			frameRate: 16,
+			repeat: -1
+		});
+
+		this.anims.create({
 			key: 'player_shoot',
 			frames: this.anims.generateFrameNumbers('necromancer', { frames: [51,52,53,54,55,56,57,58,59,60,61,62,63] }),
 			frameRate: 32,

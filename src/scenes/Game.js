@@ -28,6 +28,7 @@ class Bullet extends Phaser.GameObjects.Sprite {
 		return (this.y < -32 || this.y > game.config.height + 32 ||
 			this.x < -16 || this.x > game.config.width + 16);
 	}
+
 	impact(){
 		// handle collision events and animation here
 	}
@@ -57,7 +58,8 @@ class Player extends Phaser.GameObjects.Sprite {
 		// shoot_cd is updated every time phaser calls update, which should be ~60FPS
 		this.shoot_cd = 0; 
 
-		this.facingRight = true; // tracks the direction the player is currently facing
+		this.facing_right = true; // tracks the direction the player is currently facing
+		this.play('player_idle');
 	}
 	
 	preUpdate(time, delta){
@@ -65,19 +67,12 @@ class Player extends Phaser.GameObjects.Sprite {
 	}
 a
 	update(time, delta, keys, game, bullets){
-		if (keys.A.isDown && this.x > 20){
-			this.x -= this.SPEED;
-			if (this.facingRight){ 
-				this.facingRight = false;
-				this.flipX = true;
-			}
-		} else if (keys.D.isDown && this.x < game.config.width - 20){
-			this.x += this.SPEED;
-			if (!this.facingRight){
-				this.flipX = false;
-				this.facingRight = true;
-			}
-		}
+		if (keys.A.isDown && this.x > 20)
+			this.move(false);
+		else if (keys.D.isDown && this.x < game.config.width - 20)
+			this.move(true);
+		else if (this.anims.isPlaying && this.anims.currentAnim.key !== 'player_idle')
+			this.play('player_idle');
 		
 		this.shoot_cd--;
 		if (this.shoot_cd < 0 && keys.W.isDown){ 
@@ -86,16 +81,35 @@ a
 		}
 	}
 
+	move(is_moving_right){
+		console.log(this.anims);
+		if (this.anims.isPlaying && this.anims.currentAnim.key === 'player_idle')
+			this.play('player_walk');
+
+		if (is_moving_right){
+			this.x += this.SPEED;
+			if (!this.facing_right){
+				this.flipX = false;
+				this.facing_right = true;
+			}
+		} else {
+			this.x -= this.SPEED;
+			if (this.facing_right){ 
+				this.facing_right = false;
+				this.flipX = true;
+			}
+		}
+	}
+
 	shoot(bullets){
 		// run shooting animations
 		this.play('player_shoot');
-		// callback function to return to idle animation after shoot is complete
-		this.on('animationcomplete', () => {
-			this.play('player_idle');
-		});
+		// the key of the next animation to play once this one is complete
+		// see: https://newdocs.phaser.io/docs/3.55.1/focus/Phaser.Animations.AnimationState-nextAnim
+		this.anims.nextAnim = 'player_idle';
 
 		// spawn bullet object at the player's staff 
-		if (this.facingRight)
+		if (this.facing_right)
 			bullets.push(this.scene.add.bullet(this.x + this.BULLET_OFFSET.right.x, this.y + this.BULLET_OFFSET.right.y));
 		else
 			bullets.push(this.scene.add.bullet(this.x + this.BULLET_OFFSET.left.x, this.y + this.BULLET_OFFSET.left.y));
@@ -130,7 +144,6 @@ export class Game extends Scene
 		// when adding a custom-defined class, use add.existing. 
 		// see: https://blog.ourcade.co/posts/2020/organize-phaser-3-code-game-object-factory-methods/
 		this.add.existing(this.player); 
-		this.player.play('player_idle');
 
 		this.cursors = this.input.keyboard.createCursorKeys();
 		/* // Switch scene on mouse down
