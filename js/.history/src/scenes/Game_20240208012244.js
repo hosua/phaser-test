@@ -1,18 +1,46 @@
 import { Scene } from 'phaser';
 import { Player } from '../game/Player.js';
 import { Enemy } from '../game/Enemy.js';
+import { AssetManager } from '../game/manager/AssetManager.js';
 
-export class Game extends Scene
-{
-	constructor (){
+const MAX_BULLETS = 3; // the maximum number of bullets that can be on the screen at any given time
+
+const BULLET_VEL = { x: 0, y: -300 };
+
+export class Game extends Phaser.Scene {
+	constructor() {
 		super('Game');
-		this.bullets = [];
-		this.enemies = [];
 	}
 
-	create (){
-		this.PLAYER_START_POS = { x: this.game.config.width/2, y: 700 };
-		
+	create() {
+		this.physics.world.setBounds(0, 0, this.game.config.width, this.game.config.height);
+
+		let bullets = [];
+		for (let i = 0; i < MAX_BULLETS; i++) {
+			let bullet = this.add.bullet();
+			bullet.active = false;
+			bullets.push(bullet);
+		}
+
+		this.bullets = this.physics.add.group({
+			runChildUpdate: true,
+			// we don't want to update inactive bullets, so we'll set this false.
+		});
+
+		this.bullets.addMultiple(bullets);
+
+		console.log(this.bullets);
+
+		this.bullets.enableBody = true;
+
+		this.enemies = this.physics.add.group({
+			runChildUpdate: true
+		});
+		this.enemies.enableBody = true;
+
+		this.PLAYER_START_POS = { x: this.game.config.width / 2, y: 700 };
+		this.asset_manager = new AssetManager(this);
+
 		// This is how to define custom keycodes to use in our game
 		this.KEYS = {
 			W: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
@@ -29,18 +57,17 @@ export class Game extends Scene
 		// this.player = this.add.sprite(this.PLAYER_START_POS.x, this.PLAYER_START_POS.y);
 		// this.player = new Player(this, this.PLAYER_START_POS.x, this.PLAYER_START_POS.y);
 		this.player = this.add.player(this.PLAYER_START_POS.x, this.PLAYER_START_POS.y);
-		
+
 		// when adding a custom-defined class, use add.existing. 
 		// see: https://blog.ourcade.co/posts/2020/organize-phaser-3-code-game-object-factory-methods/
-		this.add.existing(this.player); 
+		this.add.existing(this.player);
 
-		this.cursors = this.input.keyboard.createCursorKeys();
 		/* // Switch scene on mouse down
 		this.input.once('pointerdown', () => {
 			this.scene.start('GameOver');
 		});
 		*/
-		
+
 		/* Spawning enemies */
 		const X_START = 80;
 		let x = X_START;
@@ -50,25 +77,28 @@ export class Game extends Scene
 		const Y_INTERVAL = 48;
 
 		let y = 50;
-		for (let i = 0; i < 5; i++){
-			for (let j = 0; j < 12; j++){
+		for (let i = 0; i < 5; i++) {
+			for (let j = 0; j < 12; j++) {
 				x += X_INTERVAL + X_GAP;
-				this.enemies.push(this.add.enemy(x, y).setScale(3.5));
+				this.enemies.add(this.add.enemy(this, x, y).setScale(3.5));
 			}
 			x = X_START;
 			y += Y_INTERVAL + Y_GAP;
 		}
 	}
 
-	update(time, delta){
+	update(time, delta) {
 		this.player.update(time, delta, this.KEYS, this.game, this.bullets); // Now we can handle our custom class updates like this
-		// iterate in reverse to account for indices when deleting bullets
-		for (let i = this.bullets.length-1; i >= 0; --i){
-			this.bullets[i].update(time, delta, this.game);
-			// we don't want the bullet's life to persist after it leaves the playing field
-			// so delete it when it is offscreen
-			if (this.bullets[i].isOffScreen(this.game))
-				this.bullets.splice(i, 1);
+
+		let bullets = this.bullets.children.entries;
+		for (let i = bullets.length - 1; i >= 0; --i) {
+			let bullet = bullets[i];
+			if (bullet.active)
+				bullet.update(time, delta, this.game);
+			// bullet.setVelocity(0, -300);
+			if (bullet.isOffScreen(this.game)) {
+				bullet.disable();
+			}
 		}
 	}
 }

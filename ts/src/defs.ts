@@ -1,0 +1,1 @@
+/* Global definitions that need to be accessed in multiple files go here */
