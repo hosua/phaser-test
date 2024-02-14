@@ -32,7 +32,6 @@ export class Game extends Scene {
     this.camera.setBackgroundColor(0x3d3d3d);
 
     this.anim_factory = new AnimationFactory(this);
-    this.objs = new ObjectHandler(this);
 
     this.physics.world.setBounds(
       0,
@@ -41,18 +40,23 @@ export class Game extends Scene {
       this.game.config.height as number
     );
 
-    this.objs.player = (this.add as any)["player"](
+    const player = (this.add as any)["player"](
       this,
       (this.game.config.width as number) / 2,
       (this.game.config.height as number) - 64
     );
-    console.log(this.objs.player);
 
-    // let bullet = this.add.sprite(400, 400, "bullet");
-    // bullet.play("bullet");
-    // let alan = this.add.sprite(200, 200, "enemy");
-    // alan.setScale(3, 3);
-    // alan.play("enemy_idle");
+    this.objs = new ObjectHandler(this, player);
+
+    this.physics.add.overlap(this.objs.bullets, this.objs.enemies);
+
+    this.physics.world.on(
+      "overlap",
+      (bullet_obj, enemy_obj, bullet_body, enemy_body) => {
+        bullet_obj.activate(false);
+        enemy_obj.die();
+      }
+    );
 
     const input_plugin = this.input;
     if (input_plugin && input_plugin.keyboard) {

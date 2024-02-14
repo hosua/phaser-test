@@ -9,12 +9,12 @@ const PlayerConstDefs = {
       right: { x: 15, y: -15 },
     },
   },
-  shoot_delay: 30, // number of frames between each shot, counted by roughly ~60 FPS.
+  shoot_delay: 200,
 };
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   game: Phaser.Game;
-  shoot_cd: number;
+  last_fired: number;
   const_defs: any;
 
   constructor(private _scene: Phaser.Scene, x: number, y: number) {
@@ -32,7 +32,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.const_defs.offset.body.y
     );
 
-    this.shoot_cd = 0;
+    this.last_fired = 0;
     this.play("player_idle");
   }
 
@@ -43,14 +43,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   create() {}
 
   update(time: number, delta: number, keys: any) {
-    this.shoot_cd--;
     if (keys.d.isDown) {
       this._move(true);
     } else if (keys.a.isDown) {
       this._move(false);
     }
 
-    if (keys.space.isDown || keys.w.isDown) this._shoot();
+    if (keys.space.isDown || keys.w.isDown) this._shoot(time);
   }
 
   private _move(moving_right: boolean) {
@@ -63,17 +62,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  private _shoot() {
-    if (this.shoot_cd <= 0) {
-      this.shoot_cd = this.const_defs.shoot_delay;
+  private _shoot(time: number) {
+    if (time > this.last_fired) {
       // get the next available bullet, if one is available.
       let bullet = this._scene.objs.bullets.getFirstDead(false, 0, 0, "bullet");
       if (bullet !== null) {
-        console.log("Found a ");
-        bullet.setVisible(true);
-        bullet.setActive(true);
+        this.last_fired = time + this.const_defs.shoot_delay;
+        bullet.activate(true);
 
         let bullet_start_pos = { x: 0, y: 0 };
+
+        // get the proper bullet spawn position
         if (!this.flipX)
           bullet_start_pos = {
             x: this.x + this.const_defs.offset.bullet.right.x,
@@ -84,7 +83,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             x: this.x + this.const_defs.offset.bullet.left.x,
             y: this.y + this.const_defs.offset.bullet.left.y,
           };
-
+        // set the bullet to its spawn position
         bullet.setPosition(bullet_start_pos.x, bullet_start_pos.y);
       }
     }

@@ -9,16 +9,19 @@ class ObjectHandler {
   player: Player;
   bullets: Phaser.Physics.Arcade.Group;
   enemies: Phaser.Physics.Arcade.Group;
-  constructor(private _scene: Phaser.Scene) {
+  constructor(private _scene: Phaser.Scene, player: Player) {
     console.log("Creating obj handler");
-    this.bullets = this._scene.physics.add.group({
-      runChildUpdate: true,
-    });
+    console.log(player);
+    this.player = player;
     this.enemies = this._scene.physics.add.group({
       runChildUpdate: true,
     });
-    this._init_bullets();
+    this.bullets = this._scene.physics.add.group({
+      runChildUpdate: true,
+    });
     this._init_enemies();
+    this._init_bullets();
+    this.add_overlap();
   }
 
   private _init_enemies() {
@@ -53,14 +56,21 @@ class ObjectHandler {
     for (let i = 0; i < bull_defs.max_bullets; ++i) {
       console.log(`Adding bullet #${i + 1}`);
       let bullet = (this._scene.add as any)["bullet"](this._scene);
+      bullet.body.onOverlap = true;
       this.bullets.add(bullet);
-      bullet.setActive(false);
-      bullet.setVisible(false);
+      bullet.activate(false);
     }
   }
 
-  create() {
-    this._init_enemies();
+  add_overlap() {
+    console.log(this._scene);
+    this._scene.physics.add.overlap(
+      this.player,
+      this.enemies.children.entries,
+      () => {
+        console.log("Collision!");
+      }
+    );
   }
 }
 

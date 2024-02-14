@@ -23,6 +23,11 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
   update(time: number, delta: number) {}
   shoot() {}
   move(moving_right: boolean) {}
+  die() {
+    this.setActive(false);
+    this.setVisible(false);
+    this.setPosition(-32, -32);
+  }
 }
 
 export { Enemy, EnemyConstDefs };

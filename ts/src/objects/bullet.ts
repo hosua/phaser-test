@@ -19,9 +19,12 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
     super.preUpdate(time, delta);
   }
 
+  create() {}
+
   update(time: number, delta: number) {
     if (this.active) this._move();
     this._check_bounds();
+    this.debugBodyColor = this.body?.touching.none ? 0x0099ff : 0xff9900;
   }
 
   private _move() {
@@ -29,7 +32,15 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
   }
 
   private _check_bounds() {
-    if (this.y < -16) this.setActive(false);
+    if (this.y < -16) this.activate(false);
+  }
+
+  activate(flag: boolean) {
+    if (!flag) {
+      this.setPosition(-64, -64);
+    }
+    this.setVisible(flag);
+    this.setActive(flag);
   }
 }
 
