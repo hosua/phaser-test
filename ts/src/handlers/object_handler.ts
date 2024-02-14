@@ -24,6 +24,14 @@ class ObjectHandler {
     this.add_overlap();
   }
 
+  cleanup_enemies() {
+    let entries = this.enemies.children.entries;
+    for (let i = entries.length - 1; i >= 0; --i) {
+      let entry = entries[i];
+      if (entry.dead) entries.splice(i, 1);
+    }
+  }
+
   private _init_enemies() {
     let const_defs = EnemyConstDefs;
     let gc = const_defs.grid_count;

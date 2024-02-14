@@ -90,8 +90,12 @@ export class Game extends Scene {
 
   update(time: number, delta: number) {
     this.objs.player.update(time, delta, this.keys);
+    this.objs.cleanup_enemies();
     this.check_gameover();
   }
 
-  check_gameover() {}
+  check_gameover() {
+    if (this.objs.enemies.children.entries.length === 0)
+      this.scene.start("GameOver");
+  }
 }
