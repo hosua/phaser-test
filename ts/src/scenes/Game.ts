@@ -1,6 +1,8 @@
 import { Scene, Input } from "phaser";
 import { AnimationFactory } from "../factory/animation_factory";
 import { ObjectHandler } from "../handlers/object_handler";
+import { Bullet } from "../objects/bullet";
+import { Enemy } from "../objects/enemy";
 import { Player } from "../objects/player";
 // We don't need any variables from the object factory, but we do need this intialized
 // before the Game Scene is created.
@@ -52,7 +54,12 @@ export class Game extends Scene {
 
     this.physics.world.on(
       "overlap",
-      (bullet_obj, enemy_obj, bullet_body, enemy_body) => {
+      (
+        bullet_obj: Bullet,
+        enemy_obj: Enemy
+        // bullet_body: Phaser.Physics.Arcade.Body,
+        // enemy_body: Phaser.Physics.Arcade.Body
+      ) => {
         bullet_obj.activate(false);
         enemy_obj.die();
       }
@@ -83,5 +90,8 @@ export class Game extends Scene {
 
   update(time: number, delta: number) {
     this.objs.player.update(time, delta, this.keys);
+    this.check_gameover();
   }
+
+  check_gameover() {}
 }

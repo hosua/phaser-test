@@ -9,7 +9,7 @@ const PlayerConstDefs = {
       right: { x: 15, y: -15 },
     },
   },
-  shoot_delay: 200,
+  shoot_delay: 150,
 };
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -47,12 +47,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this._move(true);
     } else if (keys.a.isDown) {
       this._move(false);
-    }
+    } else if (
+      this.anims.isPlaying &&
+      this.anims.currentAnim.key !== "player_idle" &&
+      this.anims.currentAnim.key !== "player_shoot"
+    )
+      this.play("player_idle");
 
     if (keys.space.isDown || keys.w.isDown) this._shoot(time);
   }
 
   private _move(moving_right: boolean) {
+    if (this.anims.isPlaying && this.anims.currentAnim.key === "player_idle")
+      this.play("player_walk");
+
     if (moving_right) {
       if (this.flipX) this.flipX = false;
       this.x += this.const_defs.speed.x;
@@ -85,6 +93,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
           };
         // set the bullet to its spawn position
         bullet.setPosition(bullet_start_pos.x, bullet_start_pos.y);
+        this.anims.play("player_shoot");
+        this.anims.nextAnim = "player_idle";
       }
     }
   }

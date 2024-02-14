@@ -7,6 +7,7 @@ const EnemyConstDefs = {
 };
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {
+  dead: boolean;
   constructor(private _scene: Phaser.Scene, x: number, y: number) {
     super(_scene, x, y, "Enemy");
     _scene.physics.add.existing(this);
@@ -15,6 +16,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setPosition(x, y);
     this.setSize(EnemyConstDefs.dims.w, EnemyConstDefs.dims.h);
     this.setScale(EnemyConstDefs.scale.w, EnemyConstDefs.scale.h);
+    this.dead = false;
   }
 
   preUpdate(time: number, delta: number) {
@@ -27,6 +29,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.setPosition(-32, -32);
+    this.dead = true;
   }
 }
 
